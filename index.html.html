@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Village Shop</title>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+body{margin:0;font-family:Arial;background:#f5f5f5}
+.hidden{display:none}
+.center{text-align:center}
+.header{background:#2E7D32;color:#fff;padding:15px;text-align:center;font-size:20px;font-weight:bold}
+.card{background:#fff;border-radius:12px;padding:15px;margin:12px;box-shadow:0 2px 6px rgba(0,0,0,.1)}
+.btn{width:100%;padding:12px;border:none;border-radius:8px;background:#2E7D32;color:#fff;font-size:16px;margin-top:10px;cursor:pointer}
+input,select{width:100%;padding:10px;margin-top:8px;border-radius:8px;border:1px solid #ccc}
+
+/* GRID */
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;padding:12px;padding-bottom:90px}
+.item-card{background:#fff;border-radius:12px;padding:12px;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,.1)}
+.item-icon{font-size:38px;color:#2E7D32}
+
+/* CART BAR */
+.cart-bar{position:fixed;bottom:0;width:100%;background:#fff;border-top:2px solid #2E7D32;padding:10px;display:flex;justify-content:space-between;align-items:center}
+
+/* MAP */
+.map-box iframe{width:100%;height:220px;border-radius:10px;border:0}
+</style>
+</head>
+
+<body>
+
+<!-- LANGUAGE -->
+<div id="langPage">
+  <div class="card center">
+    <h2>Village Shop</h2>
+    <p>Select Language</p>
+    <button class="btn" onclick="goLocation()">తెలుగు</button>
+    <button class="btn" onclick="goLocation()">English</button>
+  </div>
+</div>
+
+<!-- LOCATION -->
+<div id="locationPage" class="hidden">
+  <div class="header">Select Village</div>
+  <div class="card"><button class="btn" onclick="goShops('Ramapuram')">Ramapuram</button></div>
+  <div class="card"><button class="btn" onclick="goShops('Kothapet')">Kothapet</button></div>
+</div>
+
+<!-- SHOPS -->
+<div id="shopsPage" class="hidden">
+  <div class="header" id="villageTitle"></div>
+  <div class="card"><button class="btn" onclick="goItems('Ramu Kirana Store')">🏪 Ramu Kirana Store</button></div>
+  <div class="card"><button class="btn" onclick="goItems('Lakshmi Store')">🏪 Lakshmi Store</button></div>
+</div>
+
+<!-- ITEMS -->
+<div id="itemsPage" class="hidden">
+  <div class="header" id="shopTitle"></div>
+
+  <div class="grid">
+    <div class="item-card"><i class="fa-solid fa-bowl-rice item-icon"></i><p>Rice</p><p>₹60</p><button class="btn" onclick="add('Rice',60)">ADD</button></div>
+    <div class="item-card"><i class="fa-solid fa-oil-can item-icon"></i><p>Oil</p><p>₹160</p><button class="btn" onclick="add('Oil',160)">ADD</button></div>
+    <div class="item-card"><i class="fa-solid fa-glass-water item-icon"></i><p>Milk</p><p>₹30</p><button class="btn" onclick="add('Milk',30)">ADD</button></div>
+    <div class="item-card"><i class="fa-solid fa-soap item-icon"></i><p>Soap</p><p>₹35</p><button class="btn" onclick="add('Soap',35)">ADD</button></div>
+  </div>
+
+  <div class="cart-bar">
+    <span>🧺 Items: <span id="count">0</span></span>
+    <button onclick="goCart()">View Cart</button>
+  </div>
+</div>
+
+<!-- CART -->
+<div id="cartPage" class="hidden">
+  <div class="header">Your Cart</div>
+  <div id="cartItems"></div>
+  <div class="card">
+    <p>Total Items: ₹<span id="total"></span></p>
+    <p>Delivery: ₹15</p>
+    <h3>Final: ₹<span id="final"></span></h3>
+    <button class="btn" onclick="goAddress()">Place Order</button>
+  </div>
+</div>
+
+<!-- ADDRESS & PAYMENT -->
+<div id="addressPage" class="hidden">
+  <div class="header">Delivery Address</div>
+
+  <div class="card">
+    <input placeholder="Door No">
+    <input placeholder="Street / Area">
+    <input placeholder="Village">
+    <input placeholder="Pincode">
+  </div>
+
+  <div class="card map-box">
+    <p><b>Select Location on Map</b></p>
+    <iframe 
+      src="https://maps.google.com/maps?q=India&t=&z=15&ie=UTF8&iwloc=&output=embed">
+    </iframe>
+  </div>
+
+  <div class="card">
+    <p><b>Payment Method</b></p>
+    <select>
+      <option>Cash on Delivery</option>
+      <option>UPI</option>
+    </select>
+    <button class="btn" onclick="confirmOrder()">Confirm Order</button>
+  </div>
+</div>
+
+<!-- ORDER SUCCESS -->
+<div id="successPage" class="hidden">
+  <div class="card center">
+    <h2>✅ Order Placed</h2>
+    <p>Your order will be delivered soon</p>
+    <button class="btn" onclick="location.reload()">Go Home</button>
+  </div>
+</div>
+
+<script>
+let cart={};
+
+function hideAll(){
+  langPage.style.display="none";
+  locationPage.style.display="none";
+  shopsPage.style.display="none";
+  itemsPage.style.display="none";
+  cartPage.style.display="none";
+  addressPage.style.display="none";
+  successPage.style.display="none";
+}
+
+function goLocation(){hideAll();locationPage.style.display="block"}
+function goShops(v){villageTitle.innerText="Village: "+v;hideAll();shopsPage.style.display="block"}
+function goItems(s){shopTitle.innerText=s;hideAll();itemsPage.style.display="block"}
+function goCart(){renderCart();hideAll();cartPage.style.display="block"}
+function goAddress(){hideAll();addressPage.style.display="block"}
+function confirmOrder(){hideAll();successPage.style.display="block"}
+
+function add(n,p){
+  cart[n]?cart[n].qty++:(cart[n]={price:p,qty:1});
+  updateCount();
+}
+
+function updateCount(){
+  let c=0;for(let i in cart)c+=cart[i].qty;
+  count.innerText=c;
+}
+
+function renderCart(){
+  cartItems.innerHTML="";let t=0;
+  for(let i in cart){
+    let s=cart[i].qty*cart[i].price;
+    t+=s;
+    cartItems.innerHTML+=`<div class="card">${i} × ${cart[i].qty} = ₹${s}</div>`;
+  }
+  total.innerText=t;final.innerText=t+15;
+}
+</script>
+
+</body>
+</html>
